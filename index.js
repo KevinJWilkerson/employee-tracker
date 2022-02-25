@@ -66,7 +66,13 @@ const viewDepartments = () => {
 };
 
 const viewRoles = () => {
-  const sql = `SELECT roles.id AS ID, roles.title AS Title, roles.salary AS Salary, departments.name AS Department FROM roles LEFT JOIN departments on roles.department_id = departments.id;`;
+  const sql = `
+    SELECT roles.id AS ID,
+    roles.title AS Title,
+    roles.salary AS Salary,
+    departments.name AS Department
+    FROM roles
+    LEFT JOIN departments on roles.department_id = departments.id;`;
   db.query(sql, (err, rows) => {
     if (err) {
       return err;
@@ -74,6 +80,52 @@ const viewRoles = () => {
     console.table(rows);
     promptUser();
   });
+};
+
+const viewEmployees = () => {
+  const sql = `
+    SELECT employees.id AS ID, 
+    employees.first_name AS 'First Name', 
+    employees.last_name AS 'Last Name', 
+    employees.manager_id AS 'Manager ID',
+    departments.name AS Department, 
+    roles.title AS Title, 
+    roles.salary AS Salary
+    FROM employees
+    LEFT JOIN roles 
+    ON employees.role_id = roles.id
+    INNER JOIN departments
+    ON roles.department_id = departments.id`;
+  db.query(sql, (err, rows) => {
+    if (err) {
+      return err;
+    }
+    console.table(rows);
+    promptUser();
+  });
+};
+
+const addDepartment = () => {
+  return inquirer
+    .prompt([
+      {
+        type: "text",
+        name: "name",
+        message: "Enter the name of the new department.",
+      },
+    ])
+    .then(({ name }) => {
+      const sql = `
+        INSERT INTO departments (name) VALUES ('${name}')`;
+      db.query(sql, (err, rows) => {
+        if (err) {
+          console.log(err);
+          return err;
+        }
+        console.log(`${name} added as a new department.`);
+        promptUser();
+      });
+    });
 };
 
 promptUser();
